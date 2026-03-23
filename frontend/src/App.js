@@ -1,6 +1,6 @@
 import React from "react";
 import "./App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "./components/ui/sonner";
 import { LanguageProvider } from "./contexts/LanguageContext";
 
@@ -20,58 +20,48 @@ import BlogPage from "./pages/BlogPage";
 import BlogArticlePage from "./pages/BlogArticlePage";
 
 function App() {
-return ( <div className="App"> <LanguageProvider> <BrowserRouter> <Navbar /> <main> <Routes>
+  return (
+    <div className="App">
+      <BrowserRouter>
+        <LanguageProvider>
+          <Navbar />
+          <main>
+            <Routes>
+              {/* Default e */}
+              <Route path="/" element={<Navigate to="/uz" replace />} />
 
-```
-          {/* Uzbek Pages */}
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/services" element={<Services />} />
-          <Route path="/contact" element={<Contact />} />
+              {/* Uzbek */}
+              <Route path="/uz" element={<Home />} />
+              <Route path="/uz/about" element={<About />} />
+              <Route path="/uz/services" element={<Services />} />
+              <Route path="/uz/contact" element={<Contact />} />
+              <Route path="/uz/xizmatlar/:slug" element={<ServicePage />} />
+              <Route path="/uz/narxlar" element={<PricingPage />} />
+              <Route path="/uz/blog" element={<BlogPage />} />
+              <Route path="/uz/blog/:slug" element={<BlogArticlePage />} />
+              <Route path="/uz/katyollar/:slug" element={<BoilerBrandPage />} />
 
-          {/* Service Pages */}
-          <Route path="/xizmatlar/:slug" element={<ServicePage />} />
+              {/* Russian */}
+              <Route path="/ru" element={<Home />} />
+              <Route path="/ru/about" element={<About />} />
+              <Route path="/ru/services" element={<Services />} />
+              <Route path="/ru/contact" element={<Contact />} />
+              <Route path="/ru/xizmatlar/:slug" element={<ServicePage />} />
+              <Route path="/ru/narxlar" element={<PricingPage />} />
+              <Route path="/ru/blog" element={<BlogPage />} />
+              <Route path="/ru/blog/:slug" element={<BlogArticlePage />} />
+              <Route path="/ru/katyollar/:slug" element={<BoilerBrandPage />} />
 
-          {/* Pricing */}
-          <Route path="/narxlar" element={<PricingPage />} />
-
-          {/* Blog */}
-          <Route path="/blog" element={<BlogPage />} />
-          <Route path="/blog/:slug" element={<BlogArticlePage />} />
-
-          {/* Boiler Brand */}
-          <Route path="/katyollar/:slug" element={<BoilerBrandPage />} />
-
-
-          {/* Russian Pages */}
-          <Route path="/ru" element={<Home />} />
-          <Route path="/ru/about" element={<About />} />
-          <Route path="/ru/services" element={<Services />} />
-          <Route path="/ru/contact" element={<Contact />} />
-
-          {/* Russian Service Pages */}
-          <Route path="/ru/xizmatlar/:slug" element={<ServicePage />} />
-
-          {/* Russian Pricing */}
-          <Route path="/ru/narxlar" element={<PricingPage />} />
-
-          {/* Russian Blog */}
-          <Route path="/ru/blog" element={<BlogPage />} />
-          <Route path="/ru/blog/:slug" element={<BlogArticlePage />} />
-
-          {/* Russian Boiler Brand */}
-          <Route path="/ru/katyollar/:slug" element={<BoilerBrandPage />} />
-
-        </Routes>
-      </main>
-      <Footer />
-      <Toaster position="top-center" richColors />
-    </BrowserRouter>
-  </LanguageProvider>
-</div>
-```
-
-);
+              {/* Invalid routes */}
+              <Route path="*" element={<Navigate to="/uz" replace />} />
+            </Routes>
+          </main>
+          <Footer />
+          <Toaster position="top-center" richColors />
+        </LanguageProvider>
+      </BrowserRouter>
+    </div>
+  );
 }
 
 export default App;

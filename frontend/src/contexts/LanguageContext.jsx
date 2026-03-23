@@ -1,55 +1,104 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import { translations, boilerTranslationsRu } from '../data/translations';
+import React, { createContext, useState, useContext, useEffect } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { translations, boilerTranslationsRu } from '../data/translations'
 
-const LanguageContext = createContext();
+const LanguageContext = createContext()
 
 export const useLanguage = () => {
-  const context = useContext(LanguageContext);
-  if (!context) {
-    throw new Error('useLanguage must be used within a LanguageProvider');
-  }
-  return context;
-};
+	const context = useContext(LanguageContext)
+	if (!context) {
+		throw new Error('useLanguage must be used within a LanguageProvider')
+	}
+	return context
+}
+
+const getLangFromPath = pathname => {
+	if (pathname.startsWith('/ru')) return 'ru'
+	if (pathname.startsWith('/uz')) return 'uz'
+	return null
+}
+
+const addLangToPath = (pathname, lang) => {
+	if (!pathname || pathname === '/') return `/${lang}`
+	if (pathname.startsWith('/uz') || pathname.startsWith('/ru')) return pathname
+	return `/${lang}${pathname}`
+}
 
 export const LanguageProvider = ({ children }) => {
-  // Get initial language from localStorage or default to 'uz'
-  const [language, setLanguage] = useState(() => {
-    const savedLang = localStorage.getItem('serviceplyus_language');
-    return savedLang || 'uz';
-  });
+	const location = useLocation()
+	const navigate = useNavigate()
 
-  // Save language preference to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('serviceplyus_language', language);
-    // Update document lang attribute for SEO
-    document.documentElement.lang = language;
-  }, [language]);
+	const [language, setLanguageState] = useState(() => {
+		const savedLang = localStorage.getItem('serviceplyus_language')
+		return savedLang || 'uz'
+	})
 
-  const toggleLanguage = () => {
-    setLanguage(prev => prev === 'uz' ? 'ru' : 'uz');
-  };
+	useEffect(() => {
+		const pathLang = getLangFromPath(location.pathname)
 
-  const t = translations[language];
-  
-  // Helper function to get boiler brand translations
-  const getBoilerTranslation = (slug) => {
-    if (language === 'ru' && boilerTranslationsRu[slug]) {
-      return boilerTranslationsRu[slug];
-    }
-    return null; // Will fall back to Uzbek from mock.js
-  };
+		if (pathLang) {
+			if (pathLang !== language) {
+				setLanguageState(pathLang)
+			}
+			return
+		}
 
-  const value = {
-    language,
-    setLanguage,
-    toggleLanguage,
-    t,
-    getBoilerTranslation
-  };
+		const savedLang = localStorage.getItem('serviceplyus_language') || 'uz'
+		const localizedPath = addLangToPath(location.pathname, savedLang)
 
-  return (
-    <LanguageContext.Provider value={value}>
-      {children}
-    </LanguageContext.Provider>
-  );
-};
+		if (localizedPath !== location.pathname) {
+			navigate(localizedPath, { replace: true })
+		}
+	}, [location.pathname, navigate, language])
+
+	useEffect(() => {
+		localStorage.setItem('serviceplyus_language', language)
+		document.documentElement.lang = language
+	}, [language])
+
+	const setLanguage = newLang => {
+		if (!['uz', 'ru'].includes(newLang)) return
+
+		const currentPath = location.pathname
+
+		let newPath = currentPath
+
+		if (currentPath.startsWith('/uz')) {
+			newPath = currentPath.replace(/^\/uz/, `/${newLang}`)
+		} else if (currentPath.startsWith('/ru')) {
+			newPath = currentPath.replace(/^\/ru/, `/${newLang}`)
+		} else {
+			newPath = addLangToPath(currentPath, newLang)
+		}
+
+		setLanguageState(newLang)
+		navigate(newPath)
+	}
+
+	const toggleLanguage = () => {
+		setLanguage(language === 'uz' ? 'ru' : 'uz')
+	}
+
+	const t = translations[language]
+
+	const getBoilerTranslation = slug => {
+		if (language === 'ru' && boilerTranslationsRu[slug]) {
+			return boilerTranslationsRu[slug]
+		}
+		return null
+	}
+
+	return (
+		<LanguageContext.Provider
+			value={{
+				language,
+				setLanguage,
+				toggleLanguage,
+				t,
+				getBoilerTranslation,
+			}}
+		>
+			{children}
+		</LanguageContext.Provider>
+	)
+}
