@@ -19,7 +19,7 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - mongo_data:/data/serviceplyus
+      - serviceplyus_mongo_data:/data/serviceplyus
 
 volumes:
-  mongo_data:
+  serviceplyus_mongo_data:
